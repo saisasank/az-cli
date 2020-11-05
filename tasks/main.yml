@@ -1,0 +1,31 @@
+---
+# tasks file for az-cli
+- name: Update apt packages
+  apt:
+    update_cache: "yes"
+    force_apt_get: "yes"
+
+- name: Install packages needed for az-cli
+  apt:
+    name: "{{ AZ_CLI_PACKAGES }}"
+    state: present
+    force_apt_get: "yes"
+
+# - name: Import the APT repo key (Debian)
+#   apt_key:
+#     keyserver: "{{ apt_key_server }}"
+#     id: "{{ apt_key_id }}"
+
+- name: post to consul
+  shell: 'curl -sL https://packages.microsoft.com/keys/microsoft.asc |     gpg --dearmor |     sudo tee /etc/apt/trusted.gpg.d/microsoft.gpg > /dev/null'
+
+- name: Create the APT repository (Debian)
+  apt_repository:
+    repo: "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ {{ansible_distribution_release}} main"
+    filename: "{{ azure_package_name }}"
+    state: present
+
+- name: Install the application package (Debian)
+  apt:
+    name: "{{ azure_package_name }}"
+    update_cache: yes
